@@ -1,8 +1,5 @@
 const express = require("express");
 const app = express();
-
-const { connectRedis } = require("./clients/redis");
-
 const cookieParser = require("cookie-parser");
 
 const cors = require("cors");

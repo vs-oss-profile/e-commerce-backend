@@ -3,6 +3,7 @@ const apiError = require("../utils/apiError");
 const authUtils = require("../utils/authUtils");
 const bcrypt = require("bcrypt");
 const { v4: uuid } = require("uuid");
+const config = require("../utils/config");
 
 async function login(credentials) {
   const [rows] = await db.execute("SELECT * FROM user WHERE username = ?", [
@@ -24,7 +25,7 @@ async function login(credentials) {
 
   await authUtils.setRefreshTokenRedis(payload.jti, refreshToken);
 
-  return { accessToken, refreshToken };
+  return { access_token: accessToken, refresh_token: refreshToken };
 }
 
 async function signup(info) {
@@ -32,8 +33,10 @@ async function signup(info) {
   try {
     await conn.beginTransaction();
 
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(info.password, saltRounds);
+    const hashedPassword = await bcrypt.hash(
+      info.password,
+      config.app.saltRounds,
+    );
 
     const [user] = await conn.execute(
       `INSERT INTO user (username, password)
@@ -64,7 +67,7 @@ async function signup(info) {
 
     await authUtils.setRefreshTokenRedis(payload.userId, refreshToken);
 
-    return { accessToken, refreshToken };
+    return { access_token: accessToken, refresh_token: refreshToken };
   } catch (err) {
     await conn.rollback();
     if (err.code === "ER_DUP_ENTRY") {
@@ -104,7 +107,7 @@ async function refresh(oldRefreshToken) {
 
   await authUtils.setRefreshTokenRedis(newPayload.userId, newRefreshToken);
 
-  return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+  return { access_token: newAccessToken, refresh_token: newRefreshToken };
 }
 
 module.exports = { login, signup, refresh };

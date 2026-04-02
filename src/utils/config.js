@@ -1,5 +1,6 @@
 require("dotenv").config({
   path: `.env.${process.env.NODE_ENV}`,
+  quiet: true,
 });
 
 const db = {
@@ -15,9 +16,9 @@ const app = {
   port: process.env.PORT,
   jwt_access_secret: process.env.JWT_ACCESS_SECRET,
   jwt_refresh_secret: process.env.JWT_REFRESH_SECRET,
+  saltRounds: 10,
 };
 
-module.exports = {
-  db,
-  app,
-};
+const env = process.env.NODE_ENV;
+
+module.exports = { db, app, env };

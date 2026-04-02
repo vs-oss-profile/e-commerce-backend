@@ -15,10 +15,10 @@ router.post(
 );
 
 router.post(
-  "/signup",
+  "/signup-customer",
   upload.none(),
   validate(authSchema.signup),
-  asyncHandler(authController.signup),
+  asyncHandler(authController.signupCustomer),
 );
 
 router.post("/refresh", upload.none(), asyncHandler(authController.refresh));

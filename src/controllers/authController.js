@@ -14,7 +14,7 @@ async function login(req, res) {
   });
 }
 
-async function signup(req, res) {
+async function signupCustomer(req, res) {
   const info = req.body;
   const result = await authService.signup(info);
 
@@ -67,4 +67,4 @@ async function refresh(req, res) {
   }
 }
 
-module.exports = { login, signup, refresh };
+module.exports = { login, signupCustomer, refresh };
