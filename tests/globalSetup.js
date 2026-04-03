@@ -32,8 +32,11 @@ beforeEach(async () => {
     ("electronics", "computers and stuff", "electronics.png")`);
 
   // add two users: admin1, customer1
-  const adminPassword = await bcrypt.hash("admin", config.app.saltRounds);
-  const customerPassword = await bcrypt.hash("customer", config.app.saltRounds);
+  const adminPassword = await bcrypt.hash("admin1", config.app.saltRounds);
+  const customerPassword = await bcrypt.hash(
+    "customer1",
+    config.app.saltRounds,
+  );
   await db.execute(
     `INSERT INTO user (username, password, role)
     VALUES

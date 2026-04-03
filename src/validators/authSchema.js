@@ -19,14 +19,14 @@ const signup = z.object({
           message: "Only letters, numbers, and underscores allowed",
         }),
       password: z.string().min(8).max(100),
-      confirmPassword: z.string(),
+      confirm_password: z.string(),
     })
     .extend(addCustomer.shape.body.shape)
-    .refine((data) => data.password === data.confirmPassword, {
+    .refine((data) => data.password === data.confirm_password, {
       message: "Passwords do not match",
-      path: ["confirmPassword"],
+      path: ["confirm_password"],
     })
-    .transform(({ confirmPassword, ...rest }) => rest),
+    .transform(({ confirm_password, ...rest }) => rest),
 });
 
 module.exports = { login, signup };

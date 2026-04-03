@@ -3,14 +3,16 @@ const authService = require("../services/authService");
 async function login(req, res) {
   const credentials = req.body;
   const data = await authService.login(credentials);
-  res.cookie("refreshToken", data.refreshToken, {
+
+  res.cookie("refresh_token", data.refresh_token, {
     secure: process.env.NODE_ENV === "production",
     httpOnly: true,
     sameSite: "strict",
+    path: "/auth/refresh",
   });
   return res.json({
     success: true,
-    data,
+    data: { access_token: data.access_token },
   });
 }
 
@@ -18,20 +20,28 @@ async function signupCustomer(req, res) {
   const info = req.body;
   const result = await authService.signup(info);
 
-  res.cookie("refreshToken", result.refreshToken, {
+  res.cookie("refresh_token", result.refresh_token, {
     secure: process.env.NODE_ENV === "production",
     httpOnly: true,
     sameSite: "strict",
+    path: "/auth/refresh",
   });
   return res.status(201).json({
     success: true,
-    data: result,
+    data: { access_token: result.access_token },
   });
 }
 
 async function refresh(req, res) {
-  const oldRefreshToken = req.cookies?.refreshToken;
+  const oldRefreshToken = req.cookies?.refresh_token;
+
   if (!oldRefreshToken) {
+    res.clearCookie("refresh_token", {
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      sameSite: "strict",
+      path: "/auth/refresh",
+    });
     return res.json({
       success: false,
       message: "Refresh token not provided",
@@ -41,26 +51,33 @@ async function refresh(req, res) {
   try {
     const tokens = await authService.refresh(oldRefreshToken);
 
-    res.cookie("refreshToken", tokens.refreshToken, {
+    res.cookie("refresh_token", tokens.refresh_token, {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
       sameSite: "strict",
+      path: "/auth/refresh",
     });
     return res.json({
       success: true,
-      data: tokens,
+      data: { access_token: tokens.access_token },
     });
   } catch (err) {
+    res.clearCookie("refresh_token", {
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      sameSite: "strict",
+      path: "/auth/refresh",
+    });
+
     if (err.status === 401) {
-      res.cookie("refreshToken", "", {
-        secure: process.env.NODE_ENV === "production",
-        httpOnly: true,
-        sameSite: "strict",
-        expires: new Date(0),
-      });
       return res.json({
         success: false,
         message: "Token reuse detected",
+      });
+    } else if (err.status === 400) {
+      return res.json({
+        success: false,
+        message: "Invalid refresh token",
       });
     }
     throw err;

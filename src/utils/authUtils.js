@@ -21,18 +21,20 @@ function verifyRefreshToken(token) {
   return jwt.verify(token, refreshSecret);
 }
 
-async function setRefreshTokenRedis(jti, refreshToken) {
-  return await redisClient.set(
-    `refresh:${jti}:${new Date().toISOString()}`,
-    refreshToken,
-    {
-      EX: 7 * 24 * 60 * 60,
-    },
-  );
+async function setRefreshTokenRedis(refreshToken) {
+  const payload = verifyRefreshToken(refreshToken);
+
+  return await redisClient.set(`refresh:${payload.jti}`, refreshToken, {
+    EX: 7 * 24 * 60 * 60,
+  });
 }
 
 async function getRefreshTokenRedis(jti) {
   return await redisClient.get(`refresh:${jti}`);
+}
+
+async function clearRefreshTokenRedis(jti) {
+  return await redisClient.del(`refresh:${jti}`);
 }
 
 module.exports = {
@@ -42,4 +44,5 @@ module.exports = {
   verifyRefreshToken,
   setRefreshTokenRedis,
   getRefreshTokenRedis,
+  clearRefreshTokenRedis,
 };

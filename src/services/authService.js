@@ -17,18 +17,18 @@ async function login(credentials) {
 
   const payload = {
     jti: uuid(),
-    userId: user.user_id,
+    userId: user.id,
     role: user.role,
   };
   const accessToken = authUtils.generateAccessToken(payload);
   const refreshToken = authUtils.generateRefreshToken(payload);
 
-  await authUtils.setRefreshTokenRedis(payload.jti, refreshToken);
+  await authUtils.setRefreshTokenRedis(refreshToken);
 
   return { access_token: accessToken, refresh_token: refreshToken };
 }
 
-async function signup(info) {
+async function signupCustomer(info) {
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();
@@ -59,13 +59,14 @@ async function signup(info) {
 
     const payload = {
       jti: uuid(),
-      userId: user.user_id,
-      role: user.role,
+      userId: user.insertId,
+      role: "customer",
     };
+
     const accessToken = authUtils.generateAccessToken(payload);
     const refreshToken = authUtils.generateRefreshToken(payload);
 
-    await authUtils.setRefreshTokenRedis(payload.userId, refreshToken);
+    await authUtils.setRefreshTokenRedis(refreshToken);
 
     return { access_token: accessToken, refresh_token: refreshToken };
   } catch (err) {
@@ -88,11 +89,17 @@ async function signup(info) {
 }
 
 async function refresh(oldRefreshToken) {
-  const payload = authUtils.verifyRefreshToken(oldRefreshToken);
+  let payload;
+  try {
+    payload = authUtils.verifyRefreshToken(oldRefreshToken);
+  } catch (err) {
+    throw apiError(400, "Invalid Refresh Token");
+  }
 
-  const savedToken = await authUtils.getRefreshTokenRedis(payload.userId);
+  const savedToken = await authUtils.getRefreshTokenRedis(payload.jti);
 
   if (savedToken !== oldRefreshToken) {
+    await authUtils.clearRefreshTokenRedis(savedToken);
     throw apiError(401, "Token reuse detected");
   }
 
@@ -105,9 +112,10 @@ async function refresh(oldRefreshToken) {
   const newAccessToken = authUtils.generateAccessToken(newPayload);
   const newRefreshToken = authUtils.generateRefreshToken(newPayload);
 
-  await authUtils.setRefreshTokenRedis(newPayload.userId, newRefreshToken);
+  await authUtils.clearRefreshTokenRedis(payload.jti);
+  await authUtils.setRefreshTokenRedis(newRefreshToken);
 
   return { access_token: newAccessToken, refresh_token: newRefreshToken };
 }
 
-module.exports = { login, signup, refresh };
+module.exports = { login, signup: signupCustomer, refresh };
