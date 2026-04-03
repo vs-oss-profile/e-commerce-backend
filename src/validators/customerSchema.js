@@ -8,7 +8,7 @@ const addCustomer = z.object({
     email: z.email(),
     mobile: z.e164(),
     address: z.string().min(3).max(255),
-    pin: z.coerce.number().int().min(100000).max(999999),
+    pin: z.coerce.number().int().min(110001).max(999999),
   }),
 });
 

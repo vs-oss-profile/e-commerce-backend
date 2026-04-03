@@ -5,7 +5,12 @@ const bcrypt = require("bcrypt");
 const { v4: uuid } = require("uuid");
 const config = require("../utils/config");
 
-async function login(credentials) {
+async function login(credentials, oldRefreshToken) {
+  if (oldRefreshToken) {
+    const payload = authUtils.verifyRefreshToken(oldRefreshToken);
+    await authUtils.clearRefreshTokenRedis(payload.jti);
+  }
+
   const [rows] = await db.execute("SELECT * FROM user WHERE username = ?", [
     credentials.username,
   ]);
@@ -93,14 +98,14 @@ async function refresh(oldRefreshToken) {
   try {
     payload = authUtils.verifyRefreshToken(oldRefreshToken);
   } catch (err) {
-    throw apiError(400, "Invalid Refresh Token");
+    throw apiError(401, "Invalid Refresh Token");
   }
 
   const savedToken = await authUtils.getRefreshTokenRedis(payload.jti);
 
   if (savedToken !== oldRefreshToken) {
     await authUtils.clearRefreshTokenRedis(savedToken);
-    throw apiError(401, "Token reuse detected");
+    throw apiError(403, "Token reuse detected");
   }
 
   const newPayload = {

@@ -44,4 +44,10 @@ beforeEach(async () => {
     ("customer1", ?, "customer")`,
     [adminPassword, customerPassword],
   );
+
+  // add customer1 details
+  await db.execute(
+    `INSERT INTO customer (user_id, first_name, last_name, email, mobile, address, pin)
+    VALUES (2, "Customer", "One", "customer1@example.com", "+919876543210", "123 Main St, Area, State", "999999")`,
+  );
 });

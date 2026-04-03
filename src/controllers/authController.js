@@ -2,13 +2,14 @@ const authService = require("../services/authService");
 
 async function login(req, res) {
   const credentials = req.body;
-  const data = await authService.login(credentials);
+  const oldRefreshToken = req.cookies?.refresh_token;
+  const data = await authService.login(credentials, oldRefreshToken);
 
   res.cookie("refresh_token", data.refresh_token, {
     secure: process.env.NODE_ENV === "production",
     httpOnly: true,
     sameSite: "strict",
-    path: "/auth/refresh",
+    path: "/auth",
   });
   return res.json({
     success: true,
@@ -24,7 +25,7 @@ async function signupCustomer(req, res) {
     secure: process.env.NODE_ENV === "production",
     httpOnly: true,
     sameSite: "strict",
-    path: "/auth/refresh",
+    path: "/auth",
   });
   return res.status(201).json({
     success: true,
@@ -42,7 +43,7 @@ async function refresh(req, res) {
       sameSite: "strict",
       path: "/auth/refresh",
     });
-    return res.json({
+    return res.status(401).json({
       success: false,
       message: "Refresh token not provided",
     });
@@ -55,7 +56,7 @@ async function refresh(req, res) {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
       sameSite: "strict",
-      path: "/auth/refresh",
+      path: "/auth",
     });
     return res.json({
       success: true,
@@ -69,17 +70,6 @@ async function refresh(req, res) {
       path: "/auth/refresh",
     });
 
-    if (err.status === 401) {
-      return res.json({
-        success: false,
-        message: "Token reuse detected",
-      });
-    } else if (err.status === 400) {
-      return res.json({
-        success: false,
-        message: "Invalid refresh token",
-      });
-    }
     throw err;
   }
 }
