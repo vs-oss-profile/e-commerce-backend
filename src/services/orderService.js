@@ -1,7 +1,9 @@
-const db = require("../clients/db");
+const { getDbPool } = require("../clients/db");
 const apiError = require("../utils/apiError");
 
 async function getAllOrders() {
+  const db = await getDbPool();
+
   const [rows] = await db.execute(
     `SELECT first_name, last_name, \`order\`.status as order_status, \`order\`.created_at as \`timestamp\`
     FROM \`order\`

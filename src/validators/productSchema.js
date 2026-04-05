@@ -4,6 +4,8 @@ const { idSchema, getById } = require("./commonSchema");
 const addProduct = z.object({
   body: z.object({
     name: z.string().min(3).max(100),
+    description: z.string().min(3).max(500),
+    details: z.string().min(20).max(1000),
     category_id: idSchema,
     price: z.coerce.number().int().nonnegative(),
     quantity: z.coerce.number().int().nonnegative(),

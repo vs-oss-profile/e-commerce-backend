@@ -1,17 +1,23 @@
-const db = require("../clients/db");
+const { getDbPool } = require("../clients/db");
 const apiError = require("../utils/apiError");
 
 async function getAllCustomers() {
+  const db = await getDbPool();
+
   const [rows] = await db.execute("SELECT * FROM customer");
   return rows;
 }
 
 async function getCustomerById(id) {
+  const db = await getDbPool();
+
   const [rows] = await db.execute("SELECT * FROM customer WHERE id = ?", [id]);
   return rows;
 }
 
 async function addCustomer(customer) {
+  const db = await getDbPool();
+
   const columns = Object.keys(customer);
   const values = Object.values(customer);
 
@@ -31,6 +37,8 @@ async function addCustomer(customer) {
 }
 
 async function deleteCustomer(id) {
+  const db = await getDbPool();
+
   const [rows] = await db.execute(`SELECT * FROM customer WHERE id = ?`, [id]);
   if (rows.length === 0) return 0;
 
@@ -68,6 +76,8 @@ async function deleteCustomer(id) {
 }
 
 async function updateCustomer(id, customer) {
+  const db = await getDbPool();
+
   const fields = Object.keys(customer);
   const values = Object.values(customer);
   const querySubstring = fields.map((field) => `${field} = ?`).join(", ");

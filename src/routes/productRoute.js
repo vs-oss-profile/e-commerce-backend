@@ -47,9 +47,9 @@ router.get(
 
 router.post(
   "/",
+  upload.single("image"),
   authHandler.authenticate,
   authHandler.authorize("admin"),
-  upload.single("image"),
   validate(productSchema.addProduct),
   asyncHandler(productController.addProduct),
 );

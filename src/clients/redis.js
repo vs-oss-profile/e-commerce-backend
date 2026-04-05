@@ -7,7 +7,7 @@ client.on("error", (err) => {
   logger.error("Redis Client Error", err);
 });
 
-async function connectRedis() {
+async function initRedis() {
   try {
     await client.connect();
     logger.info("Redis client connected");
@@ -16,7 +16,11 @@ async function connectRedis() {
   }
 }
 
+function getRedisClient() {
+  return client;
+}
+
 module.exports = {
-  client,
-  connectRedis,
+  initRedis,
+  getRedisClient,
 };

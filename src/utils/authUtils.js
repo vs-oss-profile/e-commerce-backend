@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
 const config = require("../utils/config");
-const { client: redisClient } = require("../clients/redis");
+const { getRedisClient } = require("../clients/redis");
+
+const redisClient = getRedisClient();
 
 const accessSecret = config.app.jwt_access_secret;
 const refreshSecret = config.app.jwt_refresh_secret;

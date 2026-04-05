@@ -1,4 +1,4 @@
-const db = require("../clients/db");
+const { getDbPool } = require("../clients/db");
 const apiError = require("../utils/apiError");
 const fs = require("fs").promises;
 const path = require("path");
@@ -7,6 +7,8 @@ const logger = require("../utils/logger");
 const NUM_NEW_PRODUCTS = 3;
 
 async function getAllProducts(category_id) {
+  const db = await getDbPool();
+
   let rows;
   if (category_id !== undefined) {
     [rows] = await db.execute(
@@ -53,6 +55,8 @@ async function getAllProducts(category_id) {
 }
 
 async function getNewProducts(category_id) {
+  const db = await getDbPool();
+
   let rows;
   if (category_id !== undefined) {
     [rows] = await db.execute(
@@ -103,6 +107,8 @@ async function getNewProducts(category_id) {
 }
 
 async function getFeaturedProducts(category_id) {
+  const db = await getDbPool();
+
   let rows;
   if (category_id !== undefined) {
     [rows] = await db.execute(
@@ -151,6 +157,8 @@ async function getFeaturedProducts(category_id) {
 }
 
 async function getBestSellingProducts(category_id) {
+  const db = await getDbPool();
+
   let rows;
   if (category_id !== undefined) {
     [rows] = await db.execute(
@@ -201,6 +209,8 @@ async function getBestSellingProducts(category_id) {
 }
 
 async function getProductsWithBestDeals(category_id) {
+  const db = await getDbPool();
+
   let rows;
 
   if (category_id !== undefined) {
@@ -262,6 +272,8 @@ async function getProductsWithBestDeals(category_id) {
 }
 
 async function getProductById(id) {
+  const db = await getDbPool();
+
   const [rows] = await db.execute(
     `SELECT
       product.id AS id,
@@ -287,6 +299,8 @@ async function getProductById(id) {
 }
 
 async function addProduct(product, image) {
+  const db = await getDbPool();
+
   const columns = Object.keys(product).concat("image");
   const values = Object.values(product).concat(image.filename);
 
@@ -298,6 +312,7 @@ async function addProduct(product, image) {
     );
     return { id: result.insertId };
   } catch (err) {
+    // !!! unlink file
     if (err.code === "ER_NO_REFERENCED_ROW_2") {
       throw apiError(400, "Invalid category_id. Referenced category not found");
     }
@@ -306,6 +321,8 @@ async function addProduct(product, image) {
 }
 
 async function deleteProductImage(product_id) {
+  const db = await getDbPool();
+
   const [rows] = await db.execute(
     "SELECT image FROM product WHERE product_id = ?",
     [product_id],
@@ -322,6 +339,8 @@ async function deleteProductImage(product_id) {
 }
 
 async function deleteProduct(id) {
+  const db = await getDbPool();
+
   await deleteProductImage(id);
   const [result] = await db.execute(
     "DELETE FROM product WHERE product_id = ?",
@@ -331,6 +350,8 @@ async function deleteProduct(id) {
 }
 
 async function updateProduct(id, product, image) {
+  const db = await getDbPool();
+
   let columns = Object.keys(product);
   let values = Object.values(product);
 

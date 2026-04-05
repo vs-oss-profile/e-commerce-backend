@@ -1,7 +1,9 @@
-const db = require("../clients/db");
+const { getDbPool } = require("../clients/db");
 const apiError = require("../utils/apiError");
 
 async function getAllOffers(category_id) {
+  const db = await getDbPool();
+
   let rows;
   if (category_id !== undefined) {
     [rows] = await db.execute(
@@ -24,6 +26,8 @@ async function getAllOffers(category_id) {
 }
 
 async function getOfferById(id) {
+  const db = await getDbPool();
+
   const [rows] = await db.execute(
     `SELECT offer.id AS id, product.id AS product_id, product.name AS product, product.price AS price, offer_price, valid_till
     FROM offer
@@ -43,6 +47,8 @@ const getTimestampString = (isoString) => {
 };
 
 async function addOffer(offer) {
+  const db = await getDbPool();
+
   const valid_till = getTimestampString(offer.valid_till);
 
   offer = {
@@ -86,11 +92,15 @@ async function addOffer(offer) {
 }
 
 async function deleteOffer(id) {
+  const db = await getDbPool();
+
   const [result] = await db.execute(`DELETE FROM offer WHERE id = ?`, [id]);
   return result.affectedRows;
 }
 
 async function updateOffer(id, offer) {
+  const db = await getDbPool();
+
   const columns = Object.keys(offer);
   const values = Object.values(offer);
   const querySubString = columns.map((c) => `${c} = ?`).join(", ");

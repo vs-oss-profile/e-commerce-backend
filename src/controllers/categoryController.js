@@ -25,8 +25,9 @@ async function getCategoryById(req, res) {
 }
 
 async function addCategory(req, res) {
-  const { name, description } = req.body;
-  const result = await categoryService.addCategory(name, description);
+  const categoryInfo = req.body;
+  const image = req.file;
+  const result = await categoryService.addCategory(categoryInfo, image);
   return res.status(201).json({
     success: true,
     data: result,

@@ -20,7 +20,7 @@ router.post(
   "/",
   authHandler.authenticate,
   authHandler.authorize("admin"),
-  upload.none(),
+  upload.single("image"),
   validate(CategorySchema.addCategory),
   asyncHandler(categoryController.addCategory),
 );

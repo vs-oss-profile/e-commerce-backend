@@ -1,15 +1,20 @@
-const db = require("../src/clients/db");
+const { getDbPool, initDbPool } = require("../src/clients/db");
 const bcrypt = require("bcrypt");
-const { client: redisClient, connectRedis } = require("../src/clients/redis");
 const config = require("../src/utils/config");
+const { initRedis, getRedisClient } = require("../src/clients/redis");
+const app = require("../src/app");
+
+let db;
 
 beforeAll(async () => {
-  await connectRedis();
+  await initDbPool();
+  await initRedis();
+  db = await getDbPool();
 });
 
 afterAll(async () => {
   await db.end();
-  await redisClient.quit();
+  await getRedisClient().quit();
 });
 
 beforeEach(async () => {
@@ -24,12 +29,12 @@ beforeEach(async () => {
   await db.execute("TRUNCATE TABLE orderItem");
   await db.execute("SET FOREIGN_KEY_CHECKS = 1");
 
-  // add two categories: home, electronics
-  await db.execute(`
-    INSERT INTO category (name, description, image)
+  // add a category
+  await db.execute(
+    `INSERT INTO category (name, description, image)
     VALUES
-    ("home", "home category description", "home.png"),
-    ("electronics", "computers and stuff", "electronics.png")`);
+    ("category1", "category one description", "file_example_PNG_500kB.png")`,
+  );
 
   // add two users: admin1, customer1
   const adminPassword = await bcrypt.hash("admin1", config.app.saltRounds);
@@ -48,6 +53,6 @@ beforeEach(async () => {
   // add customer1 details
   await db.execute(
     `INSERT INTO customer (user_id, first_name, last_name, email, mobile, address, pin)
-    VALUES (2, "Customer", "One", "customer1@example.com", "+919876543210", "123 Main St, Area, State", "999999")`,
+    VALUES (2, "Customer", "One", "customer1@example.com", "+919876543211", "123 Main St, Area, State", "999999")`,
   );
 });

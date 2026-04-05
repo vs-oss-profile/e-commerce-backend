@@ -1,4 +1,4 @@
-const db = require("../clients/db");
+const { getDbPool } = require("../clients/db");
 const apiError = require("../utils/apiError");
 const authUtils = require("../utils/authUtils");
 const bcrypt = require("bcrypt");
@@ -6,6 +6,8 @@ const { v4: uuid } = require("uuid");
 const config = require("../utils/config");
 
 async function login(credentials, oldRefreshToken) {
+  const db = await getDbPool();
+
   if (oldRefreshToken) {
     const payload = authUtils.verifyRefreshToken(oldRefreshToken);
     await authUtils.clearRefreshTokenRedis(payload.jti);
@@ -34,6 +36,8 @@ async function login(credentials, oldRefreshToken) {
 }
 
 async function signupCustomer(info) {
+  const db = await getDbPool();
+
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();

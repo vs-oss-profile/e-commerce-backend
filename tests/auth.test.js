@@ -50,10 +50,10 @@ describe("customer signup", () => {
       .field("username", "customer2")
       .field("password", "customer2")
       .field("confirm_password", "customer2")
-      .field("first_name", "customer")
-      .field("last_name", "two")
+      .field("first_name", "Customer")
+      .field("last_name", "Two")
       .field("email", "customer2@example.com")
-      .field("mobile", "+919876543210")
+      .field("mobile", "+919876543212")
       .field("address", "21 Jane Street, Netherlands")
       .field("pin", "530845");
 
