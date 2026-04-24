@@ -312,7 +312,9 @@ async function addProduct(product, image) {
     );
     return { id: result.insertId };
   } catch (err) {
-    // !!! unlink file
+    const imagePath = path.join(__dirname, `../../uploads/${image.filename}`);
+    await fs.unlink(imagePath);
+
     if (err.code === "ER_NO_REFERENCED_ROW_2") {
       throw apiError(400, "Invalid category_id. Referenced category not found");
     }
